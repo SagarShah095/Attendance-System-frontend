@@ -1,14 +1,15 @@
 import { useState } from "react";
 import axios from "axios";
+import { login } from "../service";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const API_URL = import.meta.env.URL || "http://localhost:5000/api";
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,16 +17,20 @@ const Login = () => {
     setError("");
 
     try {
-      const res = await axios.post(`${API_URL}/auth/login`, {
-        email,
-        password,
-      });
+      const res = await login({ email, password });
+
+      const { token, user } = res.data;
 
       // Save token
-      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", user.role); // optional
 
-      // Redirect (example)
-      window.location.href = "/dashboard";
+      // Redirect based on role
+      if (user.role === "admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     } finally {
@@ -39,9 +44,7 @@ const Login = () => {
         <h2 className="text-3xl font-bold text-center text-gray-800">
           Attendance System
         </h2>
-        <p className="text-center text-gray-500 mt-2">
-          Sign in to your account
-        </p>
+        <p className="text-center text-gray-500 mt-2">Login to your account</p>
 
         {error && (
           <div className="mt-4 bg-red-100 text-red-700 px-4 py-2 rounded">

@@ -1,18 +1,22 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
 import { isAuthenticated } from "./utils/auth";
 import PrivateRoute from "./routes/PrivateRoute";
+import AdminRoutes from "./routes/AdminRoutes";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Default route */}
+        {/* Default */}
         <Route
           path="/"
           element={
-            isAuthenticated() ? <Navigate to="/dashboard" /> : <Navigate to="/login" />
+            isAuthenticated() ? (
+              <Navigate to="/admin/dashboard" />
+            ) : (
+              <Navigate to="/login" />
+            )
           }
         />
 
@@ -20,16 +24,16 @@ function App() {
         <Route
           path="/login"
           element={
-            isAuthenticated() ? <Navigate to="/dashboard" /> : <Login />
+            isAuthenticated() ? <Navigate to="/admin/dashboard" /> : <Login />
           }
         />
 
-        {/* Dashboard (protected) */}
+        {/* Admin Protected Routes */}
         <Route
-          path="/dashboard"
+          path="/admin/*"
           element={
             <PrivateRoute>
-              <Dashboard />
+              <AdminRoutes />
             </PrivateRoute>
           }
         />
