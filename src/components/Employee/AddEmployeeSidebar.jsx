@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Input from "../shared/Input";
 import Select from "../shared/Select";
-import { register } from "../../service";
+import { register, updateEmp } from "../../service";
+import { useToast } from "../../context/ToastContext";
 
-const AddEmployeeSidebar = ({ isOpen, setIsOpen }) => {
+const AddEmployeeSidebar = ({ isOpen, setIsOpen, selectedEmployee, refreshEmployees }) => {
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -26,6 +28,40 @@ const AddEmployeeSidebar = ({ isOpen, setIsOpen }) => {
     return () => (document.body.style.overflow = "auto");
   }, [isOpen]);
 
+  useEffect(() => {
+    if (selectedEmployee) {
+      setFormData({
+        email: selectedEmployee.email || "",
+        password: "", // Don't pre-fill password
+        role: selectedEmployee.role || "employee",
+        name: selectedEmployee.name || "",
+        gender: selectedEmployee.gender || "",
+        dateOfBirth: selectedEmployee.dateOfBirth ? new Date(selectedEmployee.dateOfBirth).toISOString().split('T')[0] : "",
+        phoneNumber: selectedEmployee.phoneNumber || "",
+        salary: selectedEmployee.salary || "",
+        position: selectedEmployee.position || "",
+        department: selectedEmployee.department || "",
+        address: selectedEmployee.address || "",
+        city: selectedEmployee.city || "",
+      });
+    } else {
+      setFormData({
+        email: "",
+        password: "",
+        role: "employee",
+        name: "",
+        gender: "",
+        dateOfBirth: "",
+        phoneNumber: "",
+        salary: "",
+        position: "",
+        department: "",
+        address: "",
+        city: "",
+      });
+    }
+  }, [selectedEmployee, isOpen]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -34,7 +70,17 @@ const AddEmployeeSidebar = ({ isOpen, setIsOpen }) => {
     e.preventDefault();
 
     try {
-      await register(formData);
+      if (selectedEmployee) {
+        await updateEmp(selectedEmployee._id, formData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        showToast("Employee updated successfully", "success");
+      } else {
+        await register(formData);
+        showToast("Employee added successfully", "success");
+      }
 
       setIsOpen(false);
       setFormData({
@@ -51,8 +97,10 @@ const AddEmployeeSidebar = ({ isOpen, setIsOpen }) => {
         address: "",
         city: "",
       });
+      if (refreshEmployees) refreshEmployees();
     } catch (error) {
       console.error(error);
+      showToast(error.response?.data?.message || "Something went wrong", "error");
     }
   };
 
@@ -61,9 +109,8 @@ const AddEmployeeSidebar = ({ isOpen, setIsOpen }) => {
       {/* Overlay */}
       <div
         onClick={() => setIsOpen(false)}
-        className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-500 ease-in-out ${
-          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
+        className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-500 ease-in-out ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+          }`}
       />
 
       {/* Sidebar */}
@@ -74,7 +121,7 @@ const AddEmployeeSidebar = ({ isOpen, setIsOpen }) => {
       >
         {/* Header */}
         <div className="flex justify-between items-center px-6 py-4 border-b">
-          <h2 className="text-lg font-semibold">Add Employee</h2>
+          <h2 className="text-lg font-semibold">{selectedEmployee ? "Edit Employee" : "Add Employee"}</h2>
           <button
             onClick={() => setIsOpen(false)}
             className="text-gray-500 hover:text-red-500 text-xl"
@@ -175,7 +222,7 @@ const AddEmployeeSidebar = ({ isOpen, setIsOpen }) => {
             type="submit"
             className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
           >
-            Save Employee
+            {selectedEmployee ? "Update Employee" : "Save Employee"}
           </button>
         </form>
       </div>
