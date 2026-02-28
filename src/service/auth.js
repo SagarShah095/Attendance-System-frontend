@@ -5,8 +5,8 @@ export const login = async (values) => {
   return axios.post(`${API_URL}/auth/login`, values);
 };
 
-export const register = async (value) => {
-  return axios.post(`${API_URL}/auth/register`, value);
+export const register = async (value, token) => {
+  return axios.post(`${API_URL}/auth/register`, value, token);
 };
 
 export const allEmp = async (token) => {

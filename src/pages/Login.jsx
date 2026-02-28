@@ -1,7 +1,7 @@
 import { useState } from "react";
-import axios from "axios";
-import { login } from "../service";
+import { login } from "../service"; // Fixed import
 import { useNavigate } from "react-router-dom";
+import Loader from "../components/shared/Loader";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -17,60 +17,70 @@ const Login = () => {
     setError("");
 
     try {
+      // Assuming login returns a promise
+      // There was a logic error in previous code using undefined 'axios' directly sometimes if service.js wasn't fully abstracting
       const res = await login({ email, password });
+      console.log("Login Response: ", res.data);
 
-      const { token, user } = res.data;
+      if (res.data && res.data.token) {
+        const { token, user } = res.data;
+        localStorage.setItem("token", token);
+        localStorage.setItem("role", user.role);
+        localStorage.setItem("user", JSON.stringify(user));
 
-      // Save token
-      localStorage.setItem("token", token);
-      localStorage.setItem("role", user.role); // optional
-
-      // Redirect based on role
-      if (user.role === "admin") {
-        navigate("/admin/dashboard");
+        if (user.role === "admin" || user.role === "hr") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/employee/dashboard"); // Assuming employee route
+        }
       } else {
-        navigate("/dashboard");
+        setError(res.data.message || "Failed to log in.");
       }
+
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.message || "Login failed. Please check your credentials.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-700 px-4">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8">
-        <h2 className="text-3xl font-bold text-center text-gray-800">
-          Attendance System
-        </h2>
-        <p className="text-center text-gray-500 mt-2">Login to your account</p>
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 transition-colors duration-300">
+      <div className="bg-surface w-full max-w-md rounded-2xl shadow-medium p-8 border border-border transition-colors">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-textPrimary">
+            Welcome Back
+          </h2>
+          <p className="text-textSecondary mt-2">Sign in to access your dashboard</p>
+        </div>
 
         {error && (
-          <div className="mt-4 bg-red-100 text-red-700 px-4 py-2 rounded">
+          <div className="mb-6 bg-red-50 dark:bg-red-900/20 text-danger px-4 py-3 rounded-lg border border-red-100 dark:border-red-900 text-sm flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-          {/* Email */}
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email
+            <label className="block text-sm font-medium text-textSecondary mb-1">
+              Email Address
             </label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              placeholder="name@company.com"
+              className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all bg-background text-textPrimary placeholder:text-textSecondary"
             />
           </div>
 
-          {/* Password */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-textSecondary mb-1">
               Password
             </label>
             <input
@@ -79,22 +89,21 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all bg-background text-textPrimary placeholder:text-textSecondary"
             />
           </div>
 
-          {/* Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition duration-300"
+            className="w-full bg-primary hover:bg-primaryHover text-white py-3 rounded-lg font-semibold transition-all duration-300 shadow-md active:scale-[0.98] flex justify-center items-center"
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? <div className="h-6 w-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : "Sign In"}
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
-          © 2025 Attendance Management System
+        <p className="text-center text-xs text-textSecondary mt-8">
+          © 2026 Attendance System. All rights reserved.
         </p>
       </div>
     </div>

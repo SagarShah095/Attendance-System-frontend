@@ -2,10 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --font-inter: 'Poppins', system-ui, sans-serif;
+
+  /* Light Mode (Modern SaaS) - HSL Channels */
+  --color-bg: 220 14% 96%;
+  /* #EAEBF0 */
+  --color-surface: 0 0% 100%;
+  /* #FFFFFF */
+  --color-border: 220 13% 91%;
+  /* #E5E7EB */
+
+  --color-text: 220 39% 11%;
+  /* #111827 */
+  --color-text-muted: 220 9% 46%;
+  /* #6B7280 */
+}
+
+/* Dark Mode (Deep Zinc) - HSL Channels */
+.dark {
+  --color-bg: 240 10% 3.9%;
+  /* #09090b */
+  --color-surface: 240 5.9% 10%;
+  /* #18181b */
+  --color-border: 240 3.7% 15.9%;
+  /* #27272a */
+
+  --color-text: 240 4.8% 95.9%;
+  /* #e4e4e7 */
+  --color-text-muted: 240 5% 64.9%;
+  /* #a1a1aa */
+}
+
 body {
-  background-color: #F4F6F9;
-  color: #111827;
-  font-family: Inter, system-ui, sans-serif;
+  background-color: hsl(var(--color-bg));
+  color: hsl(var(--color-text));
+  font-family: var(--font-inter);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom Scrollbar for a cleaner look */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 @keyframes scaleIn {
@@ -37,5 +91,5 @@ body {
 }
 
 .animate-slide-in {
-  animation: slideIn 0.4s ease-out;
+  animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }

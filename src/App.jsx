@@ -4,48 +4,55 @@ import { isAuthenticated } from "./utils/auth";
 import PrivateRoute from "./routes/PrivateRoute";
 import AdminRoutes from "./routes/AdminRoutes";
 import { ToastProvider } from "./context/ToastContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
   return (
-    <ToastProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Default */}
-          <Route
-            path="/"
-            element={
-              isAuthenticated() ? (
-                <Navigate to="/admin/dashboard" />
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
+    <ThemeProvider>
+      <ToastProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Default */}
+            <Route
+              path="/"
+              element={
+                isAuthenticated() ? (
+                  localStorage.getItem("role") === "admin" || localStorage.getItem("role") === "hr"
+                    ? <Navigate to="/admin/dashboard" />
+                    : <Navigate to="/employee/dashboard" />
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
 
-          {/* Login */}
-          <Route
-            path="/login"
-            element={
-              isAuthenticated() ? (
-                <Navigate to="/admin/dashboard" />
-              ) : (
-                <Login />
-              )
-            }
-          />
+            {/* Login */}
+            <Route
+              path="/login"
+              element={
+                isAuthenticated() ? (
+                  localStorage.getItem("role") === "admin" || localStorage.getItem("role") === "hr"
+                    ? <Navigate to="/admin/dashboard" />
+                    : <Navigate to="/employee/dashboard" />
+                ) : (
+                  <Login />
+                )
+              }
+            />
 
-          {/* Admin Protected Routes */}
-          <Route
-            path="/admin/*"
-            element={
-              <PrivateRoute>
-                <AdminRoutes />
-              </PrivateRoute>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
-    </ToastProvider>
+            {/* Admin Protected Routes */}
+            <Route
+              path="/admin/*"
+              element={
+                <PrivateRoute>
+                  <AdminRoutes />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      </ToastProvider>
+    </ThemeProvider>
   );
 }
 

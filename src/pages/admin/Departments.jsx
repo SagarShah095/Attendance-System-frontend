@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../../components/shared/Sidebar";
 import Navbar from "../../components/Navbar/Navbar";
-import { MdDelete, MdEdit } from "react-icons/md";
+import { MdDelete, MdEdit, MdAdd } from "react-icons/md";
+import { FaBuilding } from "react-icons/fa";
+import Loader from "../../components/shared/Loader";
 import { editDepartment, getAllDepartment } from "../../service/auth";
 
 const Departments = () => {
@@ -101,104 +103,142 @@ const Departments = () => {
   };
 
   return (
-    <div className="flex">
-      <Sidebar />
-      <div className="flex-1 bg-gray-50 min-h-screen">
-        <Navbar />
+    <>
+      <div className="flex h-screen bg-background text-textPrimary font-sans">
+        <Sidebar />
+        <div className="flex-1 ml-72 flex flex-col h-screen overflow-hidden transition-all duration-300">
+          <Navbar />
 
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Departments</h2>
-            <button
-              onClick={() => setIsOpen(true)}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow"
-            >
-              + Add Department
-            </button>
-          </div>
-
-          <div className="bg-white rounded-xl shadow overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-100 text-gray-600 text-sm">
-                <tr>
-                  <th className="p-4 text-left">Department</th>
-                  <th className="p-4 text-left">Description</th>
-                  <th className="p-4 text-left">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  [...Array(5)].map((_, i) => <DepartmentSkeleton key={i} />)
-                ) : departments.length ? (
-                  departments.map((dept) => (
-                    <tr key={dept._id} className="border-t hover:bg-gray-50">
-                      <td className="p-4 font-medium">{dept.department}</td>
-                      <td className="p-4 text-gray-600">{dept.description}</td>
-                      <td className="p-4 flex gap-2">
-                        <span
-                          onClick={() => handleEdit(dept)}
-                          className="p-2 cursor-pointer hover:text-blue-600 hover:bg-black/10 rounded-full"
-                        >
-                          <MdEdit />
-                        </span>
-                        <span
-                          onClick={() => handleDelete(dept._id)}
-                          className="p-2 cursor-pointer hover:text-red-600 hover:bg-black/10 rounded-full"
-                        >
-                          <MdDelete />
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="3" className="p-6 text-center text-gray-500">
-                      No departments found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* MODAL */}
-        {isOpen && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-            <div className="bg-white w-full max-w-md rounded-xl shadow-lg animate-scaleIn">
-              <div className="flex justify-between items-center p-5 border-b">
-                <h3 className="text-lg font-semibold">
-                  {isEditMode ? "Edit Department" : "Add Department"}
-                </h3>
-                <button onClick={closeModal} className="text-xl">✕</button>
+          <div className="flex-1 p-8 pt-0 overflow-auto">
+            <div className="flex justify-between items-end mb-6">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-textPrimary">Departments</h2>
+                <p className="text-sm text-textSecondary mt-1">Organize your company structure.</p>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-5 space-y-4">
+              <button
+                onClick={() => {
+                  setFormData({ department: "", description: "" });
+                  setIsEditMode(false);
+                  setIsOpen(true);
+                }}
+                className="bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center gap-2 font-bold text-sm active:scale-95"
+              >
+                <MdAdd size={20} />
+                Add Department
+              </button>
+            </div>
+
+            <div className="bg-surface rounded-3xl shadow-soft overflow-hidden border border-border">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-background/50 border-b border-border text-xs font-bold text-textSecondary uppercase tracking-wider">
+                  <tr>
+                    <th className="p-5 w-1/4">Name</th>
+                    <th className="p-5 w-1/2">Description</th>
+                    <th className="p-5 w-1/4">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {loading ? (
+                    <tr>
+                      <td colSpan="3" className="p-12 text-center">
+                        <Loader />
+                      </td>
+                    </tr>
+                  ) : departments.length > 0 ? (
+                    departments.map((dept) => (
+                      <tr key={dept._id} className="hover:bg-background/80 transition-colors group">
+                        <td className="p-5">
+                          <span className="font-bold text-textPrimary">{dept.department}</span>
+                        </td>
+                        <td className="p-5">
+                          <p className="text-sm text-textSecondary line-clamp-2">{dept.description}</p>
+                        </td>
+                        <td className="p-5 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => handleEdit(dept)}
+                            className="h-8 w-8 rounded-lg flex items-center justify-center text-textSecondary hover:text-primary hover:bg-primary/10 transition-colors"
+                            title="Edit"
+                          >
+                            <MdEdit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(dept._id)}
+                            className="h-8 w-8 rounded-lg flex items-center justify-center text-textSecondary hover:text-danger hover:bg-danger/10 transition-colors"
+                            title="Delete"
+                          >
+                            <MdDelete size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="3" className="p-12 text-center">
+                        <div className="h-16 w-16 bg-background rounded-full flex items-center justify-center mx-auto mb-3 text-textSecondary">
+                          <FaBuilding size={24} />
+                        </div>
+                        <h3 className="text-lg font-bold text-textPrimary">No departments yet</h3>
+                        <p className="text-textSecondary text-sm mt-1">Create your first department to get started.</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* MODAL */}
+      {isOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity">
+          <div className="bg-white dark:bg-gray-800 w-full max-w-lg rounded-2xl shadow-2xl dark:shadow-black/50 animate-scaleIn overflow-hidden border border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                {isEditMode ? "Edit Department" : "Add New Department"}
+              </h3>
+              <button
+                onClick={closeModal}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Department Name</label>
                 <input
                   name="department"
                   value={formData.department}
                   onChange={handleChange}
-                  placeholder="Department"
-                  className="w-full border rounded px-3 py-2"
+                  placeholder="e.g. Human Resources"
+                  className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all bg-white dark:bg-gray-900 dark:text-white placeholder:text-gray-400"
                   required
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Description</label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  placeholder="Description"
-                  rows={3}
-                  className="w-full border rounded px-3 py-2"
+                  placeholder="Enter department description..."
+                  rows={4}
+                  className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none bg-white dark:bg-gray-900 dark:text-white placeholder:text-gray-400"
                 />
-                <button className="w-full bg-indigo-600 text-white py-2 rounded">
-                  {isEditMode ? "Update" : "Save"}
+              </div>
+              <div className="pt-2">
+                <button className="w-full bg-primary hover:bg-primaryHover text-white font-semibold py-3 rounded-lg shadow-md transition-all active:scale-[0.98]">
+                  {isEditMode ? "Update Department" : "Create Department"}
                 </button>
-              </form>
-            </div>
+              </div>
+            </form>
           </div>
-        )}
-      </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 };
 
