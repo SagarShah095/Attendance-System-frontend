@@ -5,30 +5,34 @@ export const login = async (values) => {
   return axios.post(`${API_URL}/auth/login`, values);
 };
 
-export const register = async (value, token) => {
-  return axios.post(`${API_URL}/auth/register`, value, token);
+export const register = async (value, config) => {
+  return axios.post(`${API_URL}/auth/register`, value, config);
 };
 
-export const allEmp = async (token) => {
-  return axios.get(`${API_URL}/auth/get-employee`, token);
+export const allEmp = async (config) => {
+  return axios.get(`${API_URL}/auth/get-employee`, config);
 };
 
-export const updateEmp = async (id, data, token) => {
-  return axios.put(`${API_URL}/auth/update-employee/${id}`, data, token);
+export const updateEmp = async (id, data, config) => {
+  return axios.put(`${API_URL}/auth/update-employee/${id}`, data, config);
 };
 
-export const deleteEmp = async (id, token) => {
-  return axios.delete(`${API_URL}/auth/delete-employee/${id}`, token);
+export const deleteEmp = async (id, config) => {
+  return axios.delete(`${API_URL}/auth/delete-employee/${id}`, config);
 };
 
-export const addDepartment = async (value, token) => {
-  return axios.post(`${API_URL}/department/add`, value, token);
+export const addDepartment = async (value, config) => {
+  return axios.post(`${API_URL}/department/add`, value, config);
 };
 
-export const getAllDepartment = async (token) => {
-  return axios.get(`${API_URL}/department`, token);
+export const getAllDepartment = async (config) => {
+  return axios.get(`${API_URL}/department`, config);
 };
 
-export const editDepartment = async (id, data, token) => {
-  return axios.put(`${API_URL}/department/${id}`, data, token);
+export const editDepartment = async (id, data, config) => {
+  return axios.put(`${API_URL}/department/${id}`, data, config);
+};
+
+export const deleteDpt = async (id, config) => {
+  return axios.delete(`${API_URL}/department/${id}`, config);
 };

@@ -1,9 +1,9 @@
-import Sidebar from "../../components/shared/Sidebar";
+import Sidebar from "../../components/admin/Sidebar";
 import Navbar from "../../components/Navbar/Navbar";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import AddEmployeeSidebar from "../../components/Employee/AddEmployeeSidebar";
-import { allEmp, deleteEmp } from "../../service";
+import AddEmployeeSidebar from "../../components/admin/Employee/AddEmployeeSidebar";
+import { allEmp, deleteEmp, getAllDepartment } from "../../service";
 import { useToast } from "../../context/ToastContext";
 import { FaEdit, FaTrash, FaPlus, FaUsers } from "react-icons/fa";
 import Loader from "../../components/shared/Loader";
@@ -13,6 +13,7 @@ const Employees = () => {
   const [totalEmp, setTotalEmp] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [departments, setDepartments] = useState([]);
   const { showToast } = useToast();
 
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -24,19 +25,34 @@ const Employees = () => {
   const canEdit = currentUser.role === "admin" || (isHr && hrPerms.editEmployee);
   const canDelete = currentUser.role === "admin" || (isHr && hrPerms.deleteEmployee);
 
+  const getAuthConfig = () => ({
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+
   const fetchEmployee = async () => {
     setLoading(true);
     try {
-      const res = await allEmp({
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      const res = await allEmp(getAuthConfig());
       if (res?.data?.success) {
-        setTotalEmp(res?.data?.data);
+        setTotalEmp(res?.data?.data || []);
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const res = await getAllDepartment(getAuthConfig());
+      const departmentsData = res?.data?.departments || res?.data?.data || [];
+      setDepartments(departmentsData);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleDelete = async (id) => {
@@ -61,6 +77,7 @@ const Employees = () => {
 
   useEffect(() => {
     fetchEmployee();
+    fetchDepartments();
   }, []);
 
   return (
@@ -176,7 +193,7 @@ const Employees = () => {
       </div>
 
       {/* Mount Sidebar at Root Level to avoid stacking context/overflow issues */}
-      <AddEmployeeSidebar isOpen={isOpen} setIsOpen={setIsOpen} selectedEmployee={selectedEmployee} refreshEmployees={fetchEmployee} />
+      <AddEmployeeSidebar departments={departments} isOpen={isOpen} setIsOpen={setIsOpen} selectedEmployee={selectedEmployee} refreshEmployees={fetchEmployee} />
     </>
   );
 };

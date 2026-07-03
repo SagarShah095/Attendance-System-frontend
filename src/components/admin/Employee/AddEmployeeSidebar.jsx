@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Input from "../shared/Input";
-import Select from "../shared/Select";
-import { register, updateEmp, getAllDepartment } from "../../service";
-import { useToast } from "../../context/ToastContext";
+import Input from "../../shared/Input";
+import Select from "../../shared/Select";
+import { register, updateEmp, getAllDepartment } from "../../../service";
+import { useToast } from "../../../context/ToastContext";
 import { FaTimes } from "react-icons/fa";
 
-const AddEmployeeSidebar = ({ isOpen, setIsOpen, selectedEmployee, refreshEmployees }) => {
+const AddEmployeeSidebar = ({ isOpen, setIsOpen, departments, selectedEmployee, refreshEmployees }) => {
   const { showToast } = useToast();
   const [formData, setFormData] = useState({
     email: "",
@@ -29,50 +29,12 @@ const AddEmployeeSidebar = ({ isOpen, setIsOpen, selectedEmployee, refreshEmploy
     }
   });
   const [loading, setLoading] = useState(false);
-  const [departments, setDepartments] = useState([]);
-
-  console.log(departments, "departments")
-
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const res = await getAllDepartment({
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
-        if (res?.data?.success) {
-          setDepartments(res?.data?.data);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    if (isOpen) {
-      fetchDepartments();
-    }
-  }, [isOpen]);
-
+console.log(departments,"departments")
   // Prevent background scroll when sidebar is open
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "auto";
     return () => (document.body.style.overflow = "auto");
   }, [isOpen]);
-
-  const fetchAllDept = async () => {
-    try {
-      const res = await getAllDepartment({
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      if (res?.data?.success) {
-        setDepartments(res?.data?.data);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  useEffect(() => {
-    fetchAllDept();
-  }, []);
 
   useEffect(() => {
     if (selectedEmployee) {
@@ -292,7 +254,8 @@ const AddEmployeeSidebar = ({ isOpen, setIsOpen, selectedEmployee, refreshEmploy
                     className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-textPrimary appearance-none"
                     required
                   >
-                    <option value="">Select Dept</option>
+                    <option disabled value="">Select Dept</option>
+                    {/* <option value={`{departments?.department}`}>{departments?.department}</option> */}
                     {(departments || []).map((dept) => (
                       <option key={dept._id} value={dept.department}>
                         {dept.department}
@@ -313,9 +276,9 @@ const AddEmployeeSidebar = ({ isOpen, setIsOpen, selectedEmployee, refreshEmploy
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label="Date of Birth"
-                  name="dob"
+                  name="dateOfBirth"
                   type="date"
-                  value={formData.dob}
+                  value={formData.dateOfBirth}
                   onChange={handleChange}
                 />
 
@@ -359,10 +322,10 @@ const AddEmployeeSidebar = ({ isOpen, setIsOpen, selectedEmployee, refreshEmploy
               </>
             )}
 
-            <div className="h-px bg-border my-6"></div>
+            <hr className="h-px bg-border my-6" />
 
             <div>
-              <label className="block text-sm font-medium text-textSecondary mb-2">Employee ID/Action</label>
+              <label className="block text-sm font-medium text-textSecondary mb-2">Employee ID/Hr ID</label>
               <input
                 type="text"
                 name="employeeId"

@@ -1,4 +1,4 @@
-import Sidebar from "../../components/shared/Sidebar";
+import Sidebar from "../../components/admin/Sidebar";
 import Navbar from "../../components/Navbar/Navbar";
 import { FaUsers, FaBuilding, FaCheckCircle, FaMoneyBillWave, FaFileAlt } from "react-icons/fa";
 

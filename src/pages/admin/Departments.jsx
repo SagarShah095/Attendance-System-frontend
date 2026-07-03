@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import Sidebar from "../../components/shared/Sidebar";
+import Sidebar from "../../components/admin/Sidebar";
 import Navbar from "../../components/Navbar/Navbar";
 import { MdDelete, MdEdit, MdAdd } from "react-icons/md";
 import { FaBuilding } from "react-icons/fa";
 import Loader from "../../components/shared/Loader";
-import { editDepartment, getAllDepartment } from "../../service/auth";
+import { addDepartment, deleteDpt, editDepartment, getAllDepartment } from "../../service/auth";
 
 const Departments = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +18,12 @@ const Departments = () => {
     description: "",
   });
 
+  const getAuthConfig = () => ({
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -26,14 +32,15 @@ const Departments = () => {
   const fetchDepartment = async () => {
     setLoading(true);
     try {
-      const res = await getAllDepartment();
-      if (res?.data?.success) {
-        setDepartments(res.data.departments);
-      }
+      const res = await getAllDepartment(getAuthConfig());
+      const departmentData = res?.data?.departments || res?.data?.data || [];
+      setDepartments(departmentData);
     } catch (error) {
       console.error(error.response?.data || error);
+      setDepartments([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -47,36 +54,31 @@ const Departments = () => {
 
     try {
       if (isEditMode && editId) {
-        const res = await editDepartment(editId, {
-          department: formData.department,
-          description: formData.description,
-        });
-
-        if (res?.data?.success) {
-          setDepartments((prev) =>
-            prev.map((dept) =>
-              dept._id === editId ? res.data.data : dept
-            )
-          );
-        }
-      } else {
-        // UI-only add (until API added)
-        setDepartments((prev) => [
-          ...prev,
+        const res = await editDepartment(
+          editId,
           {
-            _id: Date.now().toString(),
             department: formData.department,
             description: formData.description,
           },
-        ]);
+          getAuthConfig()
+        );
+
+        if (res?.data?.success || res?.status === 200 || res?.status === 201) {
+          await fetchDepartment();
+          closeModal();
+          return;
+        }
+      } else {
+        await addDepartment(formData, getAuthConfig());
+        await fetchDepartment();
       }
 
       closeModal();
     } catch (error) {
       console.error(error.response?.data || error);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   // ================= EDIT =================
@@ -90,9 +92,17 @@ const Departments = () => {
     setIsOpen(true);
   };
 
-  // ================= DELETE (UI ONLY) =================
-  const handleDelete = (id) => {
-    setDepartments((prev) => prev.filter((dept) => dept._id !== id));
+  // ================= DELETE =================
+  const handleDelete = async (id) => {
+    try {
+      const res = await deleteDpt(id, getAuthConfig());
+
+      if (res?.data?.success || res?.status === 200 || res?.status === 204) {
+        await fetchDepartment();
+      }
+    } catch (error) {
+      console.error(error.response?.data || error);
+    }
   };
 
   const closeModal = () => {
@@ -163,7 +173,7 @@ const Departments = () => {
                             <MdEdit size={16} />
                           </button>
                           <button
-                            onClick={() => handleDelete(dept._id)}
+                            onClick={() => handleDelete(dept?._id)}
                             className="h-8 w-8 rounded-lg flex items-center justify-center text-textSecondary hover:text-danger hover:bg-danger/10 transition-colors"
                             title="Delete"
                           >
@@ -230,7 +240,7 @@ const Departments = () => {
                 />
               </div>
               <div className="pt-2">
-                <button className="w-full bg-primary hover:bg-primaryHover text-white font-semibold py-3 rounded-lg shadow-md transition-all active:scale-[0.98]">
+                <button type="submit" className="w-full bg-primary hover:bg-primaryHover text-white font-semibold py-3 rounded-lg shadow-md transition-all active:scale-[0.98]">
                   {isEditMode ? "Update Department" : "Create Department"}
                 </button>
               </div>
